@@ -16,6 +16,9 @@ documentación pueda servir como **infraestructura crítica** del AI-Driven SDLC
 - Usa títulos claros y concisos, evitando signos de puntuación innecesarios.
 - En español, utiliza _sentence case_:  
   `## Instalación y configuración` (no “Instalación Y Configuración”).
+- No numerar los encabezados de secciones y subsecciones de forma manual, salvo en casos
+  excepcionales donde la numeración sea necesaria para referencia cruzada o para seguir un estándar
+  técnico específico. En esos casos, justificar su uso en el propio documento.
 
 ---
 

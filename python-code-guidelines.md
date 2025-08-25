@@ -481,65 +481,7 @@ def divide_numbers(dividend: float, divisor: float) -> Optional[float]:
 
 ## Testing y cobertura
 
-### Estructura de tests
-
-- Organiza los tests en el directorio `tests/`.
-- Usa **unittest** como framework de testing (estándar de Python).
-- Mantén una cobertura mínima del **80%**.
-- Usa nombres descriptivos para las funciones de test en **INGLÉS**.
-
-### Ejemplo de test
-
-```python
-import unittest
-from .calculator import StatisticalCalculator
-
-class TestStatisticalCalculator(unittest.TestCase):
-    """Tests for the StatisticalCalculator class."""
-
-    def setUp(self):
-        """Setup before each test."""
-        self.calc = StatisticalCalculator()
-
-    def test_calculate_average_empty_list(self):
-        """Test for empty list."""
-        result = self.calc.calculate_average([])
-        self.assertEqual(result, 0)
-
-    def test_calculate_average_normal_list(self):
-        """Test for normal number list."""
-        result = self.calc.calculate_average([1, 2, 3, 4, 5])
-        self.assertEqual(result, 3.0)
-
-    def test_calculate_average_with_zeros(self):
-        """Test for list with zeros."""
-        result = self.calc.calculate_average([0, 0, 0])
-        self.assertEqual(result, 0.0)
-
-if __name__ == '__main__':
-    unittest.main()
-```
-
-### Ejecucion de tests
-
-```bash
-# Ejecutar tests con coverage (comando estándar de HABI)
-python3 -m coverage run -m unittest
-
-# Generar reporte de cobertura
-python3 -m coverage report
-
-# Generar reporte HTML de cobertura
-python3 -m coverage html
-
-# Ejecutar tests específicos
-python3 -m coverage run -m unittest tests.test_calculator
-
-# Ejecutar tests con descubrimiento automático
-python3 -m coverage run -m unittest discover tests/
-```
-
----
+**IMPORTANTE**: Ver la estrategia de testing y cobertura en el documento/regla testing.md
 
 ## Pre-commit hooks
 

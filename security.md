@@ -24,7 +24,8 @@ Aplica a:
   En GCP, enviar logs a **Cloud Logging** aplicando anonimización previa.
 - Mantener una lista de campos sensibles prohibidos de loggear y aplicarla en validaciones de CI.
 - **Recomendación**: fomentar el _logging estructurado_ (JSON u otro formato parseable) para
-  facilitar filtrado, búsqueda y alertas automáticas.  
+  facilitar filtrado, búsqueda y alertas automáticas.
+
   Ejemplo:
 
   ```json
@@ -33,6 +34,9 @@ Aplica a:
 
   en lugar de texto plano como `User abc123 failed to log in`.  
   El copiloto debe preferir este formato por defecto.
+- Bajo ninguna circunstancia se deben incluir credenciales, claves API, tokens u otros secretos (AWS, GCP u otros proveedores) en las salidas de registro, ya sea mediante print o herramientas de logging.
+
+- Los secretos deben ser utilizados exclusivamente por la aplicación en tiempo de ejecución y nunca ser expuestos en texto plano en archivos de log
 
 ## 4. Manejo de credenciales y secretos
 
@@ -44,6 +48,12 @@ Aplica a:
   inmediata según procedimiento oficial.
 - **Escaneo proactivo de secretos**: integrar herramientas como `gitleaks` o `trufflehog` en hooks
   pre-commit para impedir commits con secretos.
+- Los archivos .env que contengan credenciales o configuraciones sensibles deben estar incluidos
+  en el .gitignore para evitar su inclusión en el control de versiones.
+- Únicamente se podrán versionar archivos .env de referencia para entornos de desarrollo local,
+  tales como local.env o template.env, sin incluir valores reales de credenciales.
+
+- Únicamente se podrán versionar archivos .env de referencia para entornos de desarrollo local, tales como local.env o template.env, sin incluir valores reales de credenciales.
 
 ## 5. Protección y manejo de PII
 
@@ -79,6 +89,16 @@ Aplica a:
   - No exponer datos sensibles en consultas registradas.
 - Endpoints generados (APIs, Lambdas, Cloud Functions) deben incluir autenticación por defecto y
   CORS restrictivo.
+- Las políticas S3 de IAM para CloudFront deben ser gestionadas exclusivamente por un OAI, OAO
+  o OAC autorizado.
+- Está estrictamente prohibido el uso de comodines ("*") en los atributos "Action" o "Effect" de
+  las políticas, salvo que estén acompañados de un ARN específico y validado.
+- El uso de la cuenta raíz (root account) está prohibido para la asignación de permisos.
+- Las credenciales de RDS para usuarios o servicios de AWS deben gestionarse exclusivamente a
+  través de IAM.
+- Solo en casos excepcionales (servicios de terceros o requisitos especiales) se podrán utilizar
+  contraseñas, las cuales deberán almacenarse siempre en un servicio de gestión de secretos como
+  AWS Secrets Manager o su equivalente en GCP (Secret Manager).
 
 ## 8. Adherencia a prácticas seguras de desarrollo
 
@@ -116,3 +136,12 @@ El proyecto debe cumplir **obligatoriamente** con:
   respuesta en menos de 30 minutos.
 - Documentar el incidente y las acciones correctivas en el sistema oficial de incidentes.
 - El copiloto debe sugerir correcciones inmediatas al detectar incumplimientos.
+
+## 10. Seguridad en CI/CD
+
+- Los pipelines no deben ejecutar scripts de Bash, Python u otros lenguajes de forma dinámica
+  durante su ejecución, salvo que cuenten con validación previa del equipo de DevSecOps.
+- Los scripts o la lógica de negocio no deben alterar, modificar o eliminar recursos de
+  infraestructura, red o servicios en AWS, GCP, Azure, Cloudflare, MongoDB u otros proveedores.
+- Las modificaciones a la infraestructura deben realizarse exclusivamente mediante
+  Infraestructura como Código (IaC).
