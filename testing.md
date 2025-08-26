@@ -297,4 +297,91 @@ def mock_boto3_client(mocker):
 ```
 
 
+## 6. Testing en Frontend
+
+### 6.1 Tipos de Testing
+
+#### Unit Testing
+- Utilizar Jest + React Testing Library (RTL) para tests unitarios de componentes
+- Implementar mocking de dependencias para aislar componentes
+- Cubrir casos borde y escenarios de error
+- Co-localizar los tests junto a los componentes que prueban
+
+#### Integration Testing
+- Probar interacciones entre múltiples componentes
+- Utilizar Mock Service Worker (msw) para simular llamadas API
+- Validar flujos de datos entre componentes
+- Probar hooks personalizados y lógica de negocio compartida
+
+#### End-to-end (E2E) Testing
+- Implementar tests E2E usando Playwright
+- Cubrir flujos críticos de la aplicación
+- Probar en múltiples navegadores y dispositivos
+- Validar interacción entre componentes
+- Verificar integración con APIs
+- Comprobar manejo de errores de red
+- Validar estados de carga
+- Probar casos límite de integración
+- Validar la experiencia del usuario completa
+
+### 6.2 Organización y Estructura
+
+#### Estructura de Directorios para Tests Frontend
+```
+src/
+├── components/
+│   ├── Button/
+│   │   ├── Button.tsx
+│   │   ├── Button.test.tsx
+│   │   └── Button.stories.tsx
+│   └── ...
+├── hooks/
+│   ├── useAuth/
+│   │   ├── useAuth.ts
+│   │   └── useAuth.test.ts
+│   └── ...
+└── __tests__/
+    ├── integration/
+    └── e2e/
+```
+
+#### Nomenclatura y Convenciones
+- Archivos de test: `ComponentName.test.tsx` o `ComponentName.spec.tsx`
+- Tests por funcionalidad o feature
+- Nombres descriptivos que indiquen el comportamiento esperado
+- Mantener consistencia en la estructura de los tests
+
+### 6.3 Mejores Prácticas
+
+#### Mocking y Stubbing
+- Mockear dependencias externas y servicios
+- Utilizar MSW para interceptar y simular llamadas API
+- Crear stubs realistas que representen datos de producción
+- Mantener los mocks centralizados y reutilizables
+
+#### Aserciones y Validaciones
+- Usar queries accesibles de RTL (getByRole, getByLabelText, etc.)
+- Evitar selectores basados en implementación (querySelector, getByTestId)
+- Validar comportamiento en lugar de implementación
+- Incluir pruebas de accesibilidad
+
+### Performance en Tests**:
+- Agrupar tests similares para reducir setup
+- Usar `beforeAll` para configuración costosa
+- Implementar cleanup efectivo
+- Evitar tests innecesariamente lentos
+- Usar mocks para operaciones costosas
+- Implementar test sharding en CI
+- Mantener tests DRY usando helpers y fixtures
+ - Documentar casos complejos o no obvios
+- Mantener tests actualizados con el código
+- Refactorizar tests cuando sea necesario
+
+#### Consideraciones Especiales a tener en cuenta
+- Probar manejo de errores y casos borde
+- Validar responsividad y compatibilidad cross-browser
+- Verificar el manejo de estructuras de datos complejas
+- Asegurar la seguridad en el cliente (no exponer tokens/keys)
+- **IMPORTANTE** Priorizar código crítico para el negocio
+
 Este documento debe ser seguido estrictamente por todos los desarrolladores y copilotos IA para garantizar la consistencia y calidad de los tests en el proyecto.

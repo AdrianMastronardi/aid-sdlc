@@ -187,32 +187,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
 ## 5. Enfoques de testing
 
-### Unit testing
+**IMPORTANTE**: Ver la estrategia de testing y cobertura en el documento/regla testing.md
 
-- Tests unitarios por componente (Jest + RTL)
-- Mock de dependencias
-- Casos borde
-
-### Integration testing
-
-- Interacciones entre componentes
-- API calls con `msw`
-
-### End‑to‑end (E2E)
-
-- Playwright
-- Flujos críticos
-
-### Organización de tests
-
-- Co‑locar junto a componentes
-- Nombres consistentes
-- Por feature
-
-### Mocking y stubbing
-
-- Mock de dependencias externas
-- Stubs de API (`msw`)
 
 ## 6. Errores frecuentes y gotchas
 
