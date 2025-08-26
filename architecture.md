@@ -1,215 +1,677 @@
-# ARCHITECTURE.md
+# Arquitectura
 
-## 0. Metadata
-- **Sistema/Repo:** {{repo_name}}
-- **Dominio/Producto:** {{producto}}
-- **Última Actualización:** {{YYYY-MM-DD}}
-- **Owners:** {{@equipo}}
-- **Status:** [Active/Inactive]
-- **Tags:** {{backend, frontend, api, payments, pipefy, hubspot, pricing, orquestador, fábrica, ...}}
+## Propósito
+
+Definir y documentar la arquitectura de software del proyecto, incluyendo diagramas C4, stack tecnológico, estructura de código y convenciones de modelado, de forma que tanto personas como copilotos de IA puedan comprender y trabajar con la arquitectura del sistema de manera precisa y segura.
 
 ---
 
-## 1. Context
-- **Propósito:** {{1–3 oraciones del problema de negocio y valor}}
-- **Usuarios:** {{copmrador,vendedor,broker,admin, backoffice, ...}}
-- **Sistemas externos:** {{hubspot, pipefy, pasarela de pagos, google maps, s3, ecs, ...}}
-- **No-objetivos:**: {{qué explícitamente NO hace este sistema}}
-- **Restricciones:** {{SLAs, restricciones de seguridad, tiempo de respuesta objetivo, ...}}
-- **Glosario:** 
-  - {{termino}}: {{definición}}
-  - {{termino}}: {{definición}}
+## Alcance
+
+Este documento cubre todos los aspectos arquitectónicos del proyecto, incluyendo diagramas de contexto y contenedores (C4 nivel 1 y 2), stack tecnológico, estructura de código, patrones de diseño y convenciones de nomenclatura. Establece el lenguaje ubicuo del dominio y define los mecanismos de desarrollo local y testing. Incluye referencias a ADRs (Architecture Decision Records) y establece la política de actualización como fuente de verdad arquitectónica.
 
 ---
 
-## 3. Patrones y estructuras arquitectónicas optimizadas para IA
+## Contexto y Diagramas C4
 
-La organización del código no solo afecta la mantenibilidad por humanos; en un entorno asistido por IA, también define la **calidad del contexto** con el que el asistente trabajará para proponer, modificar o extender funcionalidades.  
+### Política de Actualización y Fuente de Verdad
 
-### 3.1. Estructuras que sirven como “contexto vivo”
-Los frameworks que ofrecen una arquitectura opinada y coherente facilitan que la IA entienda **dónde vive cada responsabilidad** y **cómo viajan los datos**. Por ejemplo:
+Este documento de arquitectura es la **fuente de verdad** en cuanto a componentes e interacciones con sistemas externos (C4 nivel 1 y 2) así como del lenguaje ubicuo del dominio. Debe actualizarse siempre que sucedan cambios arquitectónicos significativos.
 
-- **FastAPI + SQLModel/Pydantic**:  
-  - **DTOs unificados**: Definir modelos en SQLModel que sirvan a la vez para persistencia, validación de parámetros y transferencia interna de datos elimina duplicaciones y proporciona al asistente una referencia clara y única de las estructuras.  
-  - **Convenciones de ubicación**: Endpoints en `app/api/routes`, dependencias en `app/api/deps.py`, modelos en `app/models`, esquemas en `app/schemas`. Esto permite a la IA localizar y editar código de forma confiable.  
-  - **Pydantic como contrato**: Cada request/response validado por Pydantic actúa como documentación viva y verificable, reduciendo errores y ambigüedades.
+**Flujo de trabajo para cambios arquitectónicos:**
 
-Este tipo de arquitectura **inyecta contexto implícito**: los nombres de archivos, la separación de responsabilidades y el uso de modelos compartidos se convierten en “metadatos” que la IA aprovecha para inferir intención y mantener la coherencia.
+1. **ADR (Architecture Decision Record)**: Documentar la decisión arquitectónica con contexto, alternativas y consecuencias.
+2. **Actualizar arquitectura.md**: Reflejar los cambios en este documento, incluyendo diagramas C4 actualizados.
+3. **Implementar en código**: Trabajar el código siguiendo las nuevas directrices arquitectónicas.
 
-### 3.2. Layering vs. vertical slices
-En un contexto de IA, el modelo tradicional en capas (controllers → services → repositories) sigue siendo válido, pero presenta limitaciones:  
-- Para que la IA entienda un cambio, debe recorrer múltiples capas, dispersas en diferentes módulos.  
-- La intención de una funcionalidad puede diluirse si no se documenta bien el flujo completo.
+### Convenciones de Diagramas C4
 
-**Vertical slices** agrupan todo lo necesario para una funcionalidad (handler, lógica, modelos, validaciones) en un mismo módulo o carpeta.  
-- **Ventaja para IA**: El asistente puede leer y modificar un slice completo con todo el contexto en un único recorrido, reduciendo riesgos de inconsistencias.  
-- **Recomendación**: Incluso en proyectos con layering, considerar slices para dominios bien definidos o endpoints críticos, documentando cómo se conectan con el resto de la arquitectura.
+#### Nomenclatura y Tipos de Bloques
 
-### 3.3. Diseñar para contar una historia
-Diseñar el sistema en torno a slices claros y con propósito (el **why**) —en lugar de una colección desagregada de microservicios o lambdas— mejora radicalmente el trabajo con IA. Un slice bien definido actúa como capítulo completo de una historia:
+**Actores/Usuarios:**
+- Formato: `[Persona]` o `[Rol]`
+- Ejemplo: `[Comprador]`, `[Vendedor]`, `[Administrador]`
+- Descripción mínima: Rol y responsabilidades principales
 
-- **Code should tell a story, not just compile**: El flujo desde la entrada de datos hasta el resultado final debe ser legible y coherente.  
-- **Docs live beside the code, searchable and semantic**: La documentación relevante vive junto al código, enlazada y fácil de buscar por humanos y asistentes.  
-- **APIs are boringly predictable**: Rutas, métodos y formatos de respuesta siguen patrones consistentes, evitando que la IA “adivine” comportamientos.  
-- **Constraints are just tight enough to prevent chaos**: Reglas y convenciones claras limitan la dispersión de estilos y decisiones, sin ahogar la flexibilidad necesaria para evolucionar.
+**Sistema de Interés:**
+- Formato: `[Nombre del Sistema]`
+- Ejemplo: `[Sistema de Gestión Inmobiliaria]`
+- Descripción mínima: Propósito principal y alcance del sistema
 
-### 3.4. Cuando no hay un framework opinado
-Si el stack no cuenta con una estructura tan clara:
-- Documentar explícitamente **qué archivos contienen qué tipo de lógica** (controladores, modelos, validaciones, utilidades).
-- Definir **nombres y patrones consistentes** (por ejemplo, `*.model.ts` para modelos, `*.controller.js` para controladores).
-- Incluir un **mapa de dependencias y flujo de datos** para que la IA pueda seguir el recorrido de la información sin ambigüedades.
+**Sistemas Externos:**
+- Formato: `[Nombre del Sistema Externo]`
+- Ejemplo: `[HubSpot CRM]`, `[Pasarela de Pagos]`, `[Google Maps API]`
+- Descripción mínima: Propósito y tipo de integración
 
-### 3.5. Recomendaciones clave para IA
-- Mantener **archivos pequeños y funciones cortas**: facilitan que el asistente lea y entienda la unidad completa sin perder contexto.
-- **Colocar funciones relacionadas físicamente cerca** en el árbol de archivos.
-- Evitar “código mágico” o side-effects escondidos; documentar cualquier automatismo no obvio.
+**Contenedores:**
+- Formato: `[Nombre del Contenedor]`
+- Ejemplo: `[API Backend]`, `[Aplicación Web]`, `[Base de Datos]`
+- Descripción mínima: Tecnología principal y responsabilidad
 
----
+#### Tipos de Interacciones
 
-## 4. Contexto vivo como parte del ciclo de desarrollo
+**Comunicación Síncrona:**
+- Formato: `[Verbo] [Recurso]`
+- Ejemplo: `"envía datos de contacto"`, `"consulta información de propiedad"`
 
-En un entorno asistido por IA, **el código y su contexto deben evolucionar juntos**. El contexto no es un anexo opcional: es un artefacto de primera clase que asegura que las decisiones, su propósito y sus consecuencias se mantengan accesibles y actualizadas.
+**Comunicación Asíncrona:**
+- Formato: `[Verbo] [Evento]`
+- Ejemplo: `"publica evento de pago procesado"`, `"consume eventos de usuario"`
 
-### 4.1. ¿Qué es “contexto vivo”?
-Es toda la información necesaria para entender **por qué** el sistema es como es:  
-- Requisitos y criterios de éxito.  
-- Decisiones de diseño y arquitectura (ADRs).  
-- Restricciones técnicas y de negocio.  
-- Modelos de datos y sus relaciones.  
-- Justificación de dependencias y librerías.  
+**Acceso a Datos:**
+- Formato: `"almacena/consulta [tipo de dato]"`
+- Ejemplo: `"almacena información de usuarios"`, `"consulta propiedades disponibles"`
 
-Este contexto **vive junto al código**, versionado y editable como cualquier otro artefacto del repositorio.
+### Diagrama de Contexto (C4 Nivel 1)
 
-#### 4.2. Integración en el flujo de desarrollo
-El contexto vivo no se “escribe al final”; se produce y actualiza como parte de cada cambio:
+```mermaid
+graph TB
+    %% Actores
+    Comprador[Comprador]
+    Vendedor[Vendedor]
+    Administrador[Administrador]
+    
+    %% Sistema de Interés
+    Sistema[Sistema de Gestión Inmobiliaria]
+    
+    %% Sistemas Externos
+    HubSpot[HubSpot CRM]
+    Pipefy[Pipefy Workflows]
+    Pagos[Pasarela de Pagos]
+    Maps[Google Maps API]
+    Email[Servicio de Email]
+    
+    %% Interacciones
+    Comprador -->|"busca propiedades"| Sistema
+    Comprador -->|"solicita información"| Sistema
+    Vendedor -->|"publica propiedades"| Sistema
+    Vendedor -->|"gestiona leads"| Sistema
+    Administrador -->|"administra sistema"| Sistema
+    
+    Sistema -->|"envía leads"| HubSpot
+    Sistema -->|"crea workflows"| Pipefy
+    Sistema -->|"procesa pagos"| Pagos
+    Sistema -->|"consulta ubicaciones"| Maps
+    Sistema -->|"envía notificaciones"| Email
+    
+    %% Estilos
+    classDef actor fill:#e1f5fe
+    classDef system fill:#f3e5f5
+    classDef external fill:#fff3e0
+    
+    class Comprador,Vendedor,Administrador actor
+    class Sistema system
+    class HubSpot,Pipefy,Pagos,Maps,Email external
+```
 
-1. **Nuevo feature o cambio**  
-   - Crear/actualizar el ADR correspondiente.  
-   - Definir contratos claros (interfaces, DTOs) en los modelos y endpoints.  
-2. **Pull request**  
-   - Verificar que el contexto asociado está completo y actualizado.  
-   - Revisar si la IA podría entender el cambio con la información disponible.  
-3. **Merge y despliegue**  
-   - Contexto y código viajan juntos.  
-   - Cambios relevantes quedan documentados de forma semántica y rastreable.
+**Descripción del Contexto:**
+- **Propósito**: Sistema integral de gestión inmobiliaria que conecta compradores, vendedores y administradores.
+- **Usuarios principales**: Compradores (buscan y solicitan información), Vendedores (publican y gestionan), Administradores (gestionan el sistema).
+- **Sistemas externos críticos**: CRM para gestión de leads, workflows para procesos, pasarela de pagos, geolocalización y notificaciones.
 
-### 4.3. ADRs como ancla del “why”
-Los **Architecture Decision Records (ADRs)** son la forma más efectiva de capturar el *por qué* de las decisiones.  
-- **Formato mínimo útil**: Contexto → Decisión → Alternativas → Consecuencias.  
-- **Ubicación**: `/docs/adr` o `/architecture/decisions`.  
-- **Beneficio para IA**: Cuando el asistente necesita modificar o extender código, puede consultar el ADR para entender la intención original y evitar cambios que rompan supuestos críticos.
+### Diagrama de Contenedores (C4 Nivel 2)
 
-### 4.4. Metadatos y trazabilidad
-Agregar metadatos estructurados al código y a los documentos de contexto facilita que la IA los consuma:
-- Tags en comentarios (`@context`, `@adr-id`, `@owner`).
-- Enlaces directos desde funciones/clases a ADRs relevantes.
-- Referencias cruzadas entre slices, modelos y decisiones.
+```mermaid
+graph TB
+    %% Actores
+    Comprador[Comprador]
+    Vendedor[Vendedor]
+    Administrador[Administrador]
+    
+    %% Contenedores del Sistema
+    WebApp[Aplicación Web<br/>React + TypeScript<br/>Next.js]
+    API[API Backend<br/>FastAPI + Python<br/>SQLModel]
+    DB[(Base de Datos<br/>PostgreSQL<br/>Alembic)]
+    Cache[Cache<br/>Redis<br/>Sesiones y Datos]
+    
+    %% Sistemas Externos
+    HubSpot[HubSpot CRM]
+    Pipefy[Pipefy Workflows]
+    Pagos[Pasarela de Pagos]
+    Maps[Google Maps API]
+    Email[Servicio de Email]
+    
+    %% Interacciones Internas
+    Comprador -->|"HTTPS"| WebApp
+    Vendedor -->|"HTTPS"| WebApp
+    Administrador -->|"HTTPS"| WebApp
+    
+    WebApp -->|"REST API"| API
+    API -->|"SQL"| DB
+    API -->|"Redis Protocol"| Cache
+    
+    %% Interacciones Externas
+    API -->|"REST API"| HubSpot
+    API -->|"REST API"| Pipefy
+    API -->|"REST API"| Pagos
+    API -->|"REST API"| Maps
+    API -->|"SMTP/API"| Email
+    
+    %% Estilos
+    classDef actor fill:#e1f5fe
+    classDef container fill:#f3e5f5
+    classDef database fill:#e8f5e8
+    classDef external fill:#fff3e0
+    
+    class Comprador,Vendedor,Administrador actor
+    class WebApp,API container
+    class DB,Cache database
+    class HubSpot,Pipefy,Pagos,Maps,Email external
+```
 
-#### 4.5. Buenas prácticas para mantenerlo vivo
-- **Automatizar recordatorios**: CI que advierte si hay cambios en código sin actualizaciones de ADR.  
-- **Evitar la obsolescencia**: Revisar ADRs y metadatos en refactors o cambios de dominio.  
-- **Visibilidad total**: El contexto debe ser fácilmente navegable y buscable, tanto por humanos como por herramientas.  
+**Descripción de Contenedores:**
 
-> **Principio clave**: *El contexto no es documentación que envejece; es parte del sistema en producción.*
-
----
-
-## 5. Diagrama de contexto (C4 Nivel 1)
-Diagrama en mermaid
-
----
-
-## 6. Contenedores (C4 Nivel 2)
-### 6.1 Listado de contenedores
-Listado de contenedores con propósito, tech stack, entradas, salidas, base de datos, etc.
-
-### 6.1 Diagrama de contenedores
-Diagrama en mermaid
-
----
-
-## 7. Bases de datos
-Explicación de elección de motor de base de datos, con el contexto del tipo de información a almacenar.
-
-Ver DATABASE.MD y DATABASE_ER.MD
-
----
-
-## 8. Decisiones clave (ADRs)
-### ADR-001: Uso de PostgreSQL como base de datos principal
-**Fecha:** {{YYYY-MM-DD}}  
-**Estado:** [Aprobado,Obsoleto]
-
-#### Contexto
-Necesitamos una base de datos relacional que soporte funciones de geolocalización avanzadas y que tenga buena compatibilidad con herramientas de BI.
-
-#### Decisión
-Adoptar PostgreSQL 14 como base de datos transaccional principal.
-
-#### Alternativas consideradas
-- MySQL 8: descartado por funciones geoespaciales menos maduras.
-- SQL Server: descartado por costos de licenciamiento.
-
-#### Consecuencias
-- Beneficio: soporte avanzado para PostGIS.
-- Riesgo: curva de aprendizaje para el equipo que viene de MySQL.
-
-### ADR-002: {{Título}}
-**Fecha:** {{YYYY-MM-DD}}  
-**Estado:** [Aprobado,Obsoleto]
-
-#### Contexto
-{{Contexto}}
-
-#### Decisión
-{{Decisión}}
-
-#### Alternativas consideradas
-{{Alternativas consideradas}}
-
-#### Consecuencias
-{{Consecuencias}}
-
----
-
-## 9. Tecnologías clave
-- **Python**: 3.12
-- **Eventbridge**: Procesamiento de colas de eventos
-- **Globack**: ¿Decorador o biblioteca?
-- **Tecnología**: {{Versión o contexto}}
-- **Tecnología**: {{Versión o contexto}}
-- **Tecnología**: {{Versión o contexto}}
-
---- 
-
-## 10. Patrones de diseño y convenciones
-- **MVC**: 
-- **Microservicios**: 
-- **Bus de eventos**: 
+| Contenedor | Tecnología | Responsabilidad | Escalabilidad |
+|------------|------------|-----------------|---------------|
+| Aplicación Web | React + TypeScript + Next.js | Interfaz de usuario, SSR, routing | Horizontal (múltiples instancias) |
+| API Backend | FastAPI + Python + SQLModel | Lógica de negocio, validación, autenticación | Horizontal (múltiples workers) |
+| Base de Datos | PostgreSQL + Alembic | Persistencia de datos, transacciones | Vertical (más recursos) |
+| Cache | Redis | Sesiones, datos temporales, rate limiting | Horizontal (cluster) |
 
 ---
 
-## 11. Estructura repo
-Explicación de scaffolding o definición de clean slice
-¿Lo cambiamos por el punto 3?
+## Stack Tecnológico
+
+### Frameworks y Librerías Principales
+
+#### Frontend
+- **React**: 18.x - Framework de UI con hooks y componentes funcionales
+- **TypeScript**: 5.x - Tipado estático para mejor DX y compatibilidad con IA
+- **Next.js**: 14.x - Framework full-stack con SSR/SSG
+- **Tailwind CSS**: 3.x - Framework de utilidades CSS
+- **Zustand**: 4.x - Gestión de estado ligera (NO usar Redux para este proyecto)
+
+#### Backend
+- **FastAPI**: 0.104.x - Framework web moderno con documentación automática
+- **SQLModel**: 0.0.14 - ORM que combina SQLAlchemy y Pydantic
+- **Pydantic**: 2.x - Validación y serialización de datos
+- **Alembic**: 1.x - Migraciones de base de datos
+- **Uvicorn**: 0.24.x - Servidor ASGI para producción
+
+#### Base de Datos
+- **PostgreSQL**: 15.x - Base de datos relacional principal
+- **Redis**: 7.x - Cache y sesiones (NO usar para persistencia principal)
+
+#### Herramientas de Desarrollo
+- **Docker**: 24.x - Containerización
+- **Docker Compose**: 2.x - Orquestación local
+- **Make**: Para automatización de tareas de desarrollo
+- **GitHub Actions**: CI/CD
+
+### Restricciones y Exclusiones
+
+**NO usar:**
+- **Redux**: Zustand es suficiente para este proyecto
+- **Django**: FastAPI es más moderno y ligero
+- **MongoDB**: PostgreSQL es más adecuado para datos relacionales
+- **GraphQL**: REST API es suficiente para los casos de uso actuales
+- **WebSockets**: No hay requerimientos de tiempo real
+
+### Mecanismo de Despliegue Local
+
+#### Docker Compose
+
+**docker-compose.yml:**
+```yaml
+version: '3.8'
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/realestate
+      - REDIS_URL=redis://cache:6379
+    depends_on:
+      - db
+      - cache
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=realestate
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  cache:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
+```
+
+**docker-compose.override.yml (desarrollo):**
+```yaml
+version: '3.8'
+services:
+  frontend:
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev
+
+  backend:
+    volumes:
+      - ./backend:/app
+    command: uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+  db:
+    environment:
+      - POSTGRES_PASSWORD=dev_password
+```
+
+#### Makefile para Automatización
+
+**Makefile:**
+```makefile
+.PHONY: up down build rebuild migrate test clean
+
+# Desarrollo
+up:
+	docker-compose up -d
+
+down:
+	docker-compose down
+
+build:
+	docker-compose build
+
+rebuild:
+	docker-compose down
+	docker-compose build --no-cache
+	docker-compose up -d
+
+# Base de datos
+migrate:
+	docker-compose exec backend alembic upgrade head
+
+migrate-create:
+	docker-compose exec backend alembic revision --autogenerate -m "$(message)"
+
+# Testing
+test:
+	docker-compose exec backend pytest
+	docker-compose exec frontend npm test
+
+test-watch:
+	docker-compose exec backend pytest --watch
+	docker-compose exec frontend npm run test:watch
+
+# Limpieza
+clean:
+	docker-compose down -v
+	docker system prune -f
+
+# Logs
+logs:
+	docker-compose logs -f
+
+logs-backend:
+	docker-compose logs -f backend
+
+logs-frontend:
+	docker-compose logs -f frontend
+```
+
+### Mecanismos de Testing para Developers y Agentes
+
+#### Comandos de Testing Rápido
+
+```bash
+# Levantar entorno completo
+make up
+
+# Rebuildear después de cambios
+make rebuild
+
+# Ejecutar migraciones
+make migrate
+
+# Testing de endpoints
+curl -X GET http://localhost:8000/api/health
+curl -X GET http://localhost:8000/api/properties
+
+# Testing de frontend
+curl -X GET http://localhost:3000
+```
+
+#### Herramientas Disponibles para Agentes
+
+- **curl**: Para testing de APIs
+- **psql**: Para consultas directas a base de datos
+- **redis-cli**: Para inspeccionar cache
+- **docker exec**: Para ejecutar comandos dentro de contenedores
+- **logs en tiempo real**: Para debugging
 
 ---
 
-## 12. Etiquetas metadatos para IA 
-En cada archivo encontrarás como comentarios estas 4 etiquetas que te ayudarán a entender lo que encontrarás dentro del archivo y lo que intenta resolver.
-- **@scope**: Donde es usado el archivo (api, cli, test)
-- **@slice**: ¿A qué dominio o funcionalidad pertenece? (users, payments, invoices, listings)
-- **@layer**: ¿A qué capa de arquitectura pertenece? (controller, application, model, view, helper, command)
-- **@type**: ¿Qué tipo de lógica es? (usecase, service, gateway, test, orm)
+## Estructura de Código
+
+### Organización por Vertical Slices
+
+La estructura del proyecto sigue el patrón de **vertical slices** organizados por dominios de negocio, no por capas técnicas.
+
+```
+src/
+├── domains/
+│   ├── users/
+│   │   ├── models/
+│   │   │   ├── __init__.py
+│   │   │   ├── user.py          # Modelo SQLModel
+│   │   │   └── schemas.py       # Esquemas Pydantic
+│   │   ├── services/
+│   │   │   ├── __init__.py
+│   │   │   ├── user_service.py  # Lógica de negocio
+│   │   │   └── auth_service.py  # Autenticación
+│   │   ├── api/
+│   │   │   ├── __init__.py
+│   │   │   ├── routes.py        # Endpoints FastAPI
+│   │   │   └── dependencies.py  # Dependencias
+│   │   ├── tests/
+│   │   │   ├── __init__.py
+│   │   │   ├── test_models.py
+│   │   │   ├── test_services.py
+│   │   │   └── test_api.py
+│   │   └── README.md            # Documentación del dominio
+│   ├── properties/
+│   │   ├── models/
+│   │   │   ├── __init__.py
+│   │   │   ├── property.py
+│   │   │   └── schemas.py
+│   │   ├── services/
+│   │   │   ├── __init__.py
+│   │   │   ├── property_service.py
+│   │   │   └── search_service.py
+│   │   ├── api/
+│   │   │   ├── __init__.py
+│   │   │   └── routes.py
+│   │   ├── tests/
+│   │   │   └── ...
+│   │   └── README.md
+│   └── payments/
+│       ├── models/
+│       ├── services/
+│       ├── api/
+│       ├── tests/
+│       └── README.md
+├── shared/
+│   ├── database/
+│   │   ├── __init__.py
+│   │   ├── connection.py        # Configuración de DB
+│   │   └── migrations/          # Alembic
+│   ├── auth/
+│   │   ├── __init__.py
+│   │   ├── jwt_handler.py
+│   │   └── permissions.py
+│   ├── utils/
+│   │   ├── __init__.py
+│   │   ├── validators.py
+│   │   └── helpers.py
+│   └── types/
+│       ├── __init__.py
+│       └── common.py
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── common/
+│   │   │   │   ├── Button.tsx
+│   │   │   │   └── Input.tsx
+│   │   │   ├── users/
+│   │   │   │   ├── UserCard.tsx
+│   │   │   │   └── UserForm.tsx
+│   │   │   └── properties/
+│   │   │       ├── PropertyCard.tsx
+│   │   │       └── PropertyForm.tsx
+│   │   ├── pages/
+│   │   │   ├── users/
+│   │   │   │   ├── index.tsx
+│   │   │   │   └── [id].tsx
+│   │   │   └── properties/
+│   │   │       ├── index.tsx
+│   │   │       └── [id].tsx
+│   │   ├── hooks/
+│   │   │   ├── useUsers.ts
+│   │   │   └── useProperties.ts
+│   │   ├── stores/
+│   │   │   ├── userStore.ts
+│   │   │   └── propertyStore.ts
+│   │   └── types/
+│   │       ├── user.ts
+│   │       └── property.ts
+│   ├── public/
+│   └── package.json
+├── main.py                      # Punto de entrada FastAPI
+├── requirements.txt
+├── docker-compose.yml
+├── docker-compose.override.yml
+├── Makefile
+└── README.md
+```
+
+### Nomenclatura y Lenguaje Ubicuo
+
+#### Convenciones de Nomenclatura
+
+**Entidades de Dominio:**
+- **Usuario**: `User` (modelo), `user` (variable), `users` (colección)
+- **Propiedad**: `Property` (modelo), `property` (variable), `properties` (colección)
+- **Pago**: `Payment` (modelo), `payment` (variable), `payments` (colección)
+
+**Servicios:**
+- Formato: `<Dominio>Service`
+- Ejemplo: `UserService`, `PropertyService`, `PaymentService`
+
+**Endpoints:**
+- Formato: `/api/<dominio>/<recurso>`
+- Ejemplo: `/api/users`, `/api/properties`, `/api/payments`
+
+**Componentes Frontend:**
+- Formato: `<Dominio><Componente>`
+- Ejemplo: `UserCard`, `PropertyForm`, `PaymentModal`
+
+#### Lenguaje Ubicuo del Dominio
+
+**Conceptos Clave:**
+- **Usuario**: Persona que interactúa con el sistema (comprador, vendedor, administrador)
+- **Propiedad**: Inmueble disponible para compra/venta
+- **Lead**: Interés potencial en una propiedad
+- **Pago**: Transacción monetaria relacionada con una propiedad
+- **Workflow**: Proceso automatizado de gestión de leads
+
+**Verbos de Dominio:**
+- **Publicar**: Acción de un vendedor de hacer visible una propiedad
+- **Buscar**: Acción de un comprador de encontrar propiedades
+- **Solicitar**: Acción de un comprador de obtener más información
+- **Procesar**: Acción del sistema de manejar una solicitud o pago
+
+### Ubicación de Funciones y Responsabilidades
+
+#### Backend (FastAPI + SQLModel)
+
+**Modelos (`models/`):**
+- Definición de entidades SQLModel
+- Relaciones entre entidades
+- Validaciones a nivel de modelo
+
+**Servicios (`services/`):**
+- Lógica de negocio
+- Integración con sistemas externos
+- Operaciones complejas que involucran múltiples modelos
+
+**API (`api/`):**
+- Endpoints HTTP
+- Validación de entrada
+- Transformación de respuesta
+- Autenticación y autorización
+
+**Dependencias (`api/dependencies.py`):**
+- Inyección de dependencias
+- Autenticación
+- Validación de permisos
+
+#### Frontend (React + TypeScript)
+
+**Componentes (`components/`):**
+- UI reutilizable
+- Lógica de presentación
+- Manejo de estado local
+
+**Páginas (`pages/`):**
+- Rutas de la aplicación
+- Composición de componentes
+- Lógica de navegación
+
+**Hooks (`hooks/`):**
+- Lógica reutilizable
+- Integración con APIs
+- Manejo de estado global
+
+**Stores (`stores/`):**
+- Estado global (Zustand)
+- Persistencia de datos
+- Sincronización con backend
+
+### Metadatos para IA
+
+Cada archivo debe incluir metadatos estructurados:
+
+```python
+"""
+@scope: api, cli, test
+@slice: users, properties, payments
+@layer: model, service, controller, view
+@type: entity, usecase, gateway, test
+"""
+```
+
+```typescript
+/**
+ * @scope: frontend, test
+ * @slice: users, properties, payments
+ * @layer: component, page, hook, store
+ * @type: ui, logic, state, test
+ */
+```
 
 ---
 
-## 13. Referencias
-- DATABASE.MD
-- DATABASE_ER.MD
-- TESTING.MD
-- SECURITY.MD
-- CODE_GUIDELINES.MD
-- TASK_GUIDELINES.MD
-- DEPLOYMENT.MD
-- OBSERVABILITY.MD
+## Patrones de Diseño y Convenciones
+
+### Patrones de Backend
+
+**Repository Pattern:**
+- Encapsular acceso a datos
+- Facilitar testing con mocks
+- Separar lógica de negocio de persistencia
+
+**Service Layer:**
+- Contener lógica de negocio
+- Orquestar operaciones complejas
+- Manejar transacciones
+
+**Dependency Injection:**
+- Usar FastAPI Depends()
+- Facilitar testing
+- Reducir acoplamiento
+
+### Patrones de Frontend
+
+**Container/Presentational:**
+- Separar lógica de presentación
+- Facilitar testing
+- Mejorar reutilización
+
+**Custom Hooks:**
+- Encapsular lógica reutilizable
+- Integrar con APIs
+- Manejar estado local
+
+**Zustand Stores:**
+- Estado global ligero
+- Persistencia opcional
+- DevTools integrados
+
+### Convenciones de Testing
+
+**Backend:**
+- Pytest para testing unitario
+- Factory Boy para fixtures
+- Coverage mínimo 80%
+
+**Frontend:**
+- Jest + Testing Library
+- Componentes aislados
+- Mocks para APIs externas
+
+---
+
+## Integración con Otros Documentos
+
+Este documento se relaciona con:
+
+- **[database.md](database.md)**: Estructuras de datos y modelos
+- **[security.md](security.md)**: Autenticación y autorización
+- **[testing.md](testing.md)**: Estrategias de testing
+- **[deployment.md](deployment.md)**: Despliegue y configuración
+
+### ADRs Relacionados
+
+- **ADR-001**: Uso de FastAPI + SQLModel para backend
+- **ADR-002**: Organización por vertical slices
+- **ADR-003**: Stack tecnológico y restricciones
+
+---
+
+## Validación y Cumplimiento
+
+### Validaciones Automatizadas
+
+- **Convenciones de nombres**: Linting de Python y TypeScript
+- **Estructura de archivos**: Scripts de validación de estructura
+- **Metadatos**: Verificación de presencia de tags
+- **Documentación**: Alertas de documentación desactualizada
+
+### Herramientas de Validación
+
+- **pre-commit hooks**: Validaciones antes de commit
+- **CI/CD**: Validaciones en pipeline
+- **Linters**: ESLint, Pylint, Black, isort
+- **Type checkers**: mypy, TypeScript compiler
+
+---
+
+## Formato y Consistencia
+
+Este documento debe cumplir las pautas de [`markdown-guidelines.md`](markdown-guidelines.md), incluyendo:
+
+- Encabezados **ATX** (`#`, `##`, `###`)
+- Un único encabezado H1 al inicio
+- Línea en blanco antes y después de cada encabezado
+- Bloques de código con fences y lenguaje especificado
+- Diagramas Mermaid para visualización
+
+### Cumplimiento Automatizado
+
+Para asegurar la coherencia de la arquitectura y el código:
+
+- **Validación de estructura**: Verificar que los archivos estén en las ubicaciones correctas
+- **Convenciones de nombres**: Adherencia a patrones establecidos
+- **Metadatos**: Presencia de tags necesarios para IA
+- **Documentación**: Sincronización con cambios en código
+
+La implementación de estas validaciones será responsabilidad del equipo de **DevOps** o **SRE** del proyecto.
