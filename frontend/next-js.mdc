@@ -146,23 +146,30 @@ Este documento resume buenas prácticas para desarrollar con Next.js, enfocadas 
 - Validar parámetros
 - Codificar salidas
 
-### SWR por defecto (fetch en cliente)
+### SWR por defecto (fetch o axios en cliente)
 
 - Provider global con `SWRConfig`
-- Fetcher `fetch().then(r => r.json())`
+- Fetcher configurable con `fetch().then(r => r.json())` o `axios()`
 - Sin revalidación en focus/reconnect por defecto
 - Reintentos limitados con backoff (cuando aplique)
 
 ```tsx
 'use client';
 import { SWRConfig } from 'swr';
+// Importa axios si eliges usarlo
+// import axios from 'axios';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SWRConfig
       value={{
+        // Opción con fetch:
         fetcher: (resource, init) =>
           fetch(resource as RequestInfo, init).then((r) => r.json()),
+
+        // Alternativa con axios:
+        // fetcher: (resource, init) => axios(resource, init).then((res) => res.data),
+
         revalidateOnFocus: false,
         revalidateOnReconnect: false,
         shouldRetryOnError: false,
@@ -188,7 +195,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
 ## 5. Enfoques de testing
 
 **IMPORTANTE**: Ver la estrategia de testing y cobertura en el documento/regla testing.md
-
 
 ## 6. Errores frecuentes y gotchas
 
