@@ -159,7 +159,7 @@ graph TB
     classDef payment fill:#ffebee
     
     class Comprador,Vendedor,Administrador actor
-    class WebApp
+    class WebApp container
     class PaymentService payment
     class DB,PaymentDB database
     class PaymentGateway,EmailService,BankAPI external
