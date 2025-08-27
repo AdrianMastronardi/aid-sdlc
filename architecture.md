@@ -114,59 +114,65 @@ graph TB
 ```mermaid
 graph TB
     %% Actores
-    Comprador[Comprador]
-    Vendedor[Vendedor]
-    Administrador[Administrador]
+    Comprador[Comprador<br/>Busca propiedades y<br/>procesa pagos]
+    Vendedor[Vendedor<br/>Gestiona propiedades<br/>y recibe pagos]
+    Administrador[Administrador<br/>Monitorea transacciones<br/>y gestiona sistema]
     
-    %% Contenedores del Sistema
-    WebApp[Aplicación Web<br/>React + TypeScript<br/>Next.js]
-    API[API Backend<br/>FastAPI + Python<br/>SQLModel]
-    DB[(Base de Datos<br/>PostgreSQL<br/>Alembic)]
-    Cache[Cache<br/>Redis<br/>Sesiones y Datos]
+    %% Contenedores del Sistema de Gestión Inmobiliaria
+    WebApp[Aplicación Web<br/>React + TypeScript + Next.js<br/>Interfaz de usuario y<br/>formularios de pago]
+    
+    PaymentService[Servicio de Pagos<br/>FastAPI + Python<br/>Procesamiento de transacciones,<br/>validación y reconciliación]
+    
+    DB[(Base de Datos Principal<br/>PostgreSQL + Alembic<br/>Datos de usuarios, propiedades,<br/>transacciones y logs)]
+    
+    PaymentDB[(Base de Datos de Pagos<br/>PostgreSQL + Alembic<br/>Transacciones, reconciliación<br/>y auditoría financiera)]
     
     %% Sistemas Externos
-    HubSpot[HubSpot CRM]
-    Pipefy[Pipefy Workflows]
-    Pagos[Pasarela de Pagos]
-    Maps[Google Maps API]
-    Email[Servicio de Email]
+    PaymentGateway[Pasarela de Pagos<br/>Stripe/PayPal<br/>Procesamiento de<br/>transacciones financieras]
     
-    %% Interacciones Internas
-    Comprador -->|"HTTPS"| WebApp
-    Vendedor -->|"HTTPS"| WebApp
-    Administrador -->|"HTTPS"| WebApp
+    EmailService[Servicio de Email<br/>SendGrid/AWS SES<br/>Notificaciones<br/>y confirmaciones]
     
-    WebApp -->|"REST API"| API
-    API -->|"SQL"| DB
-    API -->|"Redis Protocol"| Cache
+    BankAPI[API Bancaria<br/>Verificación de cuentas<br/>y transferencias]
     
-    %% Interacciones Externas
-    API -->|"REST API"| HubSpot
-    API -->|"REST API"| Pipefy
-    API -->|"REST API"| Pagos
-    API -->|"REST API"| Maps
-    API -->|"SMTP/API"| Email
+    %% Interacciones del Sistema de Pagos
+    Comprador -->|"1. Inicia proceso de pago"| WebApp
+    Vendedor -->|"2. Gestiona propiedades"| WebApp
+    Administrador -->|"3. Monitorea transacciones"| WebApp
+    
+    WebApp -->|"4. Envía datos de pago"| PaymentService
+    
+    API -->|"5. Enruta pagos"| PaymentService
+    
+    PaymentService -->|"6. Valida datos de pago"| PaymentGateway
+    PaymentService -->|"7. Procesa transacción"| PaymentGateway
+    PaymentService -->|"8. Verifica cuenta bancaria"| BankAPI
+    
+    PaymentService -->|"9. Almacena transacción"| PaymentDB
+    PaymentService -->|"10. Actualiza estado"| DB
+    PaymentService -->|"11. Envía confirmación"| EmailService
     
     %% Estilos
     classDef actor fill:#e1f5fe
     classDef container fill:#f3e5f5
     classDef database fill:#e8f5e8
     classDef external fill:#fff3e0
+    classDef payment fill:#ffebee
     
     class Comprador,Vendedor,Administrador actor
-    class WebApp,API container
-    class DB,Cache database
-    class HubSpot,Pipefy,Pagos,Maps,Email external
+    class WebApp container
+    class PaymentService payment
+    class DB,PaymentDB database
+    class PaymentGateway,EmailService,BankAPI external
 ```
 
-**Descripción de Contenedores:**
+**Descripción de Contenedores del Sistema de Pagos:**
 
 | Contenedor | Tecnología | Responsabilidad | Escalabilidad |
 |------------|------------|-----------------|---------------|
-| Aplicación Web | React + TypeScript + Next.js | Interfaz de usuario, SSR, routing | Horizontal (múltiples instancias) |
-| API Backend | FastAPI + Python + SQLModel | Lógica de negocio, validación, autenticación | Horizontal (múltiples workers) |
-| Base de Datos | PostgreSQL + Alembic | Persistencia de datos, transacciones | Vertical (más recursos) |
-| Cache | Redis | Sesiones, datos temporales, rate limiting | Horizontal (cluster) |
+| **Aplicación Web** | React + TypeScript + Next.js | Interfaz de usuario, formularios de pago, gestión de propiedades | Horizontal (múltiples instancias) |
+| **Servicio de Pagos** | FastAPI + Python | Procesamiento de transacciones, validación, reconciliación | Horizontal (múltiples workers) |
+| **Base de Datos Principal** | PostgreSQL + Alembic | Datos de usuarios, propiedades, logs del sistema | Vertical (más recursos) |
+| **Base de Datos de Pagos** | PostgreSQL + Alembic | Transacciones financieras, reconciliación, auditoría | Vertical (más recursos) |
 
 ---
 
@@ -479,6 +485,15 @@ src/
 **Endpoints:**
 - Formato: `/api/<dominio>/<recurso>`
 - Ejemplo: `/api/users`, `/api/properties`, `/api/payments`
+- **Estándares REST:**
+  - **Métodos HTTP estándar**: GET, POST, PUT, PATCH, DELETE
+  - **Códigos de estado HTTP**: 200, 201, 400, 401, 403, 404, 500
+  - **Formato de respuesta**: JSON consistente con estructura `{data, message, errors}`
+  - **Versionado**: `/api/v1/<dominio>/<recurso>` para cambios breaking
+  - **Paginación**: Query parameters `?page=1&limit=20` para colecciones
+  - **Filtrado**: Query parameters `?status=active&type=residential`
+  - **Ordenamiento**: Query parameter `?sort=created_at&order=desc`
+  - **Búsqueda**: Query parameter `?q=search_term` para búsquedas de texto
 
 **Componentes Frontend:**
 - Formato: `<Dominio><Componente>`
@@ -631,9 +646,9 @@ Este documento se relaciona con:
 
 ### ADRs Relacionados
 
-- **ADR-001**: Uso de FastAPI + SQLModel para backend
-- **ADR-002**: Organización por vertical slices
-- **ADR-003**: Stack tecnológico y restricciones
+- **[ADR-001](docs/adr/ADR-001-fastapi-sqlmodel.md)**: Uso de FastAPI + SQLModel para backend
+- **[ADR-002](docs/adr/ADR-002-vertical-slices.md)**: Organización por vertical slices
+- **[ADR-003](docs/adr/ADR-003-tech-stack.md)**: Stack tecnológico y restricciones
 
 ---
 

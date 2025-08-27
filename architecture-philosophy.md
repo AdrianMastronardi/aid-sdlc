@@ -107,7 +107,11 @@ Los dominios se definen basándose en:
 
 #### Base de Datos
 - **PostgreSQL**: Base de datos relacional madura con excelente soporte para funciones avanzadas.
-- **Alembic**: Herramienta de migración que mantiene el esquema sincronizado.
+- **MySQL**: Base de datos relacional de código abierto, ampliamente adoptada y con excelente rendimiento para aplicaciones web.
+- **MongoDB**: Base de datos NoSQL orientada a documentos, ideal para datos no estructurados o semiestructurados.
+- **Elasticsearch**: Motor de búsqueda y análisis distribuido, excelente para búsquedas complejas y análisis de logs.
+- **DynamoDB**: Base de datos NoSQL completamente administrada por AWS, con escalabilidad automática y latencia de un solo dígito.
+- **Alembic**: Herramienta de migración que mantiene el esquema sincronizado para bases de datos relacionales.
 
 #### Herramientas de Desarrollo
 - **Docker**: Containerización que facilita la reproducibilidad del entorno y desarrollo local completo.
