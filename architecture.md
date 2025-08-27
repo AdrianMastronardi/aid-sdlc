@@ -170,15 +170,9 @@ graph TB
 | Contenedor | Tecnología | Responsabilidad | Escalabilidad |
 |------------|------------|-----------------|---------------|
 | **Aplicación Web** | React + TypeScript + Next.js | Interfaz de usuario, formularios de pago, gestión de propiedades | Horizontal (múltiples instancias) |
-| **API Gateway** | FastAPI + Python | Enrutamiento, autenticación, rate limiting, balanceo de carga | Horizontal (múltiples workers) |
-| **Servicio de Autenticación** | FastAPI + JWT | Validación de usuarios, gestión de sesiones, autorización | Horizontal (múltiples instancias) |
 | **Servicio de Pagos** | FastAPI + Python | Procesamiento de transacciones, validación, reconciliación | Horizontal (múltiples workers) |
-| **Servicio de Propiedades** | FastAPI + Python | Gestión de inventario, disponibilidad, búsqueda | Horizontal (múltiples instancias) |
-| **Servicio de Usuarios** | FastAPI + Python | Gestión de perfiles, preferencias, historial | Horizontal (múltiples instancias) |
-| **Servicio de Notificaciones** | FastAPI + Python | Envío de confirmaciones, alertas, integración con sistemas externos | Horizontal (múltiples workers) |
 | **Base de Datos Principal** | PostgreSQL + Alembic | Datos de usuarios, propiedades, logs del sistema | Vertical (más recursos) |
 | **Base de Datos de Pagos** | PostgreSQL + Alembic | Transacciones financieras, reconciliación, auditoría | Vertical (más recursos) |
-| **Cache de Sesiones** | Redis | Sesiones activas, rate limiting, datos temporales | Horizontal (cluster) |
 
 ---
 
