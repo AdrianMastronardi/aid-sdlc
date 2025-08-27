@@ -121,32 +121,14 @@ graph TB
     %% Contenedores del Sistema de Gestión Inmobiliaria
     WebApp[Aplicación Web<br/>React + TypeScript + Next.js<br/>Interfaz de usuario y<br/>formularios de pago]
     
-    API[API Gateway<br/>FastAPI + Python<br/>Enrutamiento, autenticación<br/>y rate limiting]
-    
-    AuthService[Servicio de Autenticación<br/>FastAPI + JWT<br/>Validación de usuarios<br/>y gestión de sesiones]
-    
     PaymentService[Servicio de Pagos<br/>FastAPI + Python<br/>Procesamiento de transacciones,<br/>validación y reconciliación]
     
-    PropertyService[Servicio de Propiedades<br/>FastAPI + Python<br/>Gestión de inventario<br/>y disponibilidad]
-    
-    UserService[Servicio de Usuarios<br/>FastAPI + Python<br/>Gestión de perfiles<br/>y preferencias]
-    
-    NotificationService[Servicio de Notificaciones<br/>FastAPI + Python<br/>Envío de confirmaciones<br/>y alertas]
-    
     DB[(Base de Datos Principal<br/>PostgreSQL + Alembic<br/>Datos de usuarios, propiedades,<br/>transacciones y logs)]
-    
-    Cache[Cache de Sesiones<br/>Redis<br/>Sesiones activas,<br/>rate limiting y datos temporales]
     
     PaymentDB[(Base de Datos de Pagos<br/>PostgreSQL + Alembic<br/>Transacciones, reconciliación<br/>y auditoría financiera)]
     
     %% Sistemas Externos
     PaymentGateway[Pasarela de Pagos<br/>Stripe/PayPal<br/>Procesamiento de<br/>transacciones financieras]
-    
-    HubSpot[HubSpot CRM<br/>Gestión de leads<br/>y seguimiento de clientes]
-    
-    Pipefy[Pipefy Workflows<br/>Automatización de<br/>procesos de venta]
-    
-    Maps[Google Maps API<br/>Geolocalización<br/>y validación de direcciones]
     
     EmailService[Servicio de Email<br/>SendGrid/AWS SES<br/>Notificaciones<br/>y confirmaciones]
     
@@ -157,34 +139,17 @@ graph TB
     Vendedor -->|"2. Gestiona propiedades"| WebApp
     Administrador -->|"3. Monitorea transacciones"| WebApp
     
-    WebApp -->|"4. Solicita autenticación"| AuthService
-    WebApp -->|"5. Envía datos de pago"| PaymentService
-    WebApp -->|"6. Consulta propiedades"| PropertyService
-    WebApp -->|"7. Gestiona perfil"| UserService
+    WebApp -->|"4. Envía datos de pago"| PaymentService
     
-    API -->|"8. Enruta solicitudes"| AuthService
-    API -->|"9. Enruta pagos"| PaymentService
-    API -->|"10. Enruta propiedades"| PropertyService
-    API -->|"11. Enruta usuarios"| UserService
+    API -->|"5. Enruta pagos"| PaymentService
     
-    PaymentService -->|"12. Valida datos de pago"| PaymentGateway
-    PaymentService -->|"13. Procesa transacción"| PaymentGateway
-    PaymentService -->|"14. Verifica cuenta bancaria"| BankAPI
+    PaymentService -->|"6. Valida datos de pago"| PaymentGateway
+    PaymentService -->|"7. Procesa transacción"| PaymentGateway
+    PaymentService -->|"8. Verifica cuenta bancaria"| BankAPI
     
-    PaymentService -->|"15. Almacena transacción"| PaymentDB
-    PaymentService -->|"16. Actualiza estado"| DB
-    PaymentService -->|"17. Envía confirmación"| NotificationService
-    
-    NotificationService -->|"18. Envía email"| EmailService
-    NotificationService -->|"19. Actualiza CRM"| HubSpot
-    NotificationService -->|"20. Crea workflow"| Pipefy
-    
-    AuthService -->|"21. Valida credenciales"| DB
-    PropertyService -->|"22. Consulta inventario"| DB
-    UserService -->|"23. Gestiona perfiles"| DB
-    
-    AuthService -->|"24. Almacena sesión"| Cache
-    PaymentService -->|"25. Cachea datos temporales"| Cache
+    PaymentService -->|"9. Almacena transacción"| PaymentDB
+    PaymentService -->|"10. Actualiza estado"| DB
+    PaymentService -->|"11. Envía confirmación"| EmailService
     
     %% Estilos
     classDef actor fill:#e1f5fe
@@ -194,10 +159,10 @@ graph TB
     classDef payment fill:#ffebee
     
     class Comprador,Vendedor,Administrador actor
-    class WebApp,API,AuthService,PropertyService,UserService,NotificationService container
+    class WebApp
     class PaymentService payment
-    class DB,Cache,PaymentDB database
-    class PaymentGateway,HubSpot,Pipefy,Maps,EmailService,BankAPI external
+    class DB,PaymentDB database
+    class PaymentGateway,EmailService,BankAPI external
 ```
 
 **Descripción de Contenedores del Sistema de Pagos:**
